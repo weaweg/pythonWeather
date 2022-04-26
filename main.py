@@ -1,5 +1,3 @@
-from tkinter import *
+from weather import WeatherGUI
 
-from api import WeatherData
-
-test = Tk()
+test = WeatherGUI()
