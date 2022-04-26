@@ -1,1 +1,1 @@
-# pythonWeather
+# Projekt zaliczeniowy Programowanie III
