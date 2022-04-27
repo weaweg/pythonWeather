@@ -1,3 +1,2 @@
-from weather.weatherApi import WeatherApi
-from weather.weatherGUI import WeatherGUI
-
+from weather.WeatherApi import WeatherApi
+from weather.WeatherPlot import WeatherPlot
