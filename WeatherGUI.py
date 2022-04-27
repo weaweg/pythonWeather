@@ -1,12 +1,12 @@
 import tkinter as tk
 import tkinter.messagebox as msgbox
-from tkinter import ttk
 from datetime import datetime
+from tkinter import ttk
+
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from weather import WeatherApi
 from weather import WeatherPlot
-
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 class WeatherGUI:
@@ -29,8 +29,7 @@ class WeatherGUI:
 
     def __initGUI(self):
         self.__optionFrame = ttk.Frame(self.__root, padding=self.__pd__)
-        self.__optionFrame.grid()
-        self.__optionFrame.grid_remove()
+        self.__optionFrame.grid(column=0, row=0)
         ttk.Button(self.__optionFrame, text="Prognoza pogody", command=self.__showForecast).grid(columnspan=2, row=0)
         self.__dateBox = ttk.Combobox(self.__optionFrame, state="readonly",
                                       values=["Wczoraj", "Przedwczoraj", "Trzy dni temu", "Cztery dni temu",
@@ -54,9 +53,10 @@ class WeatherGUI:
 
         self.__dataFrame = ttk.Frame(self.__root, padding=self.__pd__)
         self.__dataFrame.grid(column=0, columnspan=2, row=1)
-        dataLabel = ttk.Label(self.__dataFrame, text="Wybierz miasto aby wyświetlić pogodę")
-        dataLabel.pack()
 
+        fig = WeatherPlot()
+        self.__drawPlot(fig)
+        self.center(self.__root)
         tk.mainloop()
 
     def __getCityLocation(self):
@@ -81,17 +81,15 @@ class WeatherGUI:
             cityTreeView.insert("", tk.END, values=city)
         cityTreeView.grid(column=1, columnspan=3, row=1)
         ttk.Button(pickCity, text="Wybierz",
-                   command=lambda: self.__setCity(pickCity, cityTreeView, cities)).grid(column=2, row=2)
+                   command=lambda: [self.__setCity(cities[cityTreeView.index(cityTreeView.focus())]),
+                                    pickCity.destroy(), self.__showForecast()]).grid(column=2, row=2)
         self.center(pickCity)
 
-    def __setCity(self, pickCity, cityTreeView, cities):
-        index = cityTreeView.index(cityTreeView.focus())
-        self.__weatherApi.setCity(cities[index]["lat"], cities[index]["lon"])
-        self.__city = cities[index]["name"]
-        self.__state = cities[index]['state']
-        self.__country = cities[index]["country"]
-        pickCity.destroy()
-        self.__showForecast()
+    def __setCity(self, city):
+        self.__weatherApi.setLocation(city["lat"], city["lon"])
+        self.__city = city["name"]
+        self.__state = city['state']
+        self.__country = city["country"]
 
     def __showForecast(self):
         forecastData = self.__weatherApi.getForecastWeather()
@@ -121,8 +119,6 @@ class WeatherGUI:
         canvas = FigureCanvasTkAgg(fig, master=self.__dataFrame)
         canvas.draw()
         canvas.get_tk_widget().pack()
-        self.__optionFrame.grid()
-        self.center(self.__root)
 
     @staticmethod
     def center(win):
